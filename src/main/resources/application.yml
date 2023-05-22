@@ -1,0 +1,24 @@
+server:
+  port: 8081
+spring:
+  mvc:
+    view:
+      prefix: /WEB-INF/jsp/
+      suffix: .jsp
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/crossjoin?useUnicode=true&characterEncoding=utf8&autoReconnect=true&serverTimezone=Asia/Seoul&useOldAliasMetadataBehavior=true&zeroDateTimeNehavior=convertToNull
+    username: crossjoinAdmin
+    password: 1234
+  thymeleaf:
+    prefix: classpath:/
+    suffix: .html
+    view-names: templates/*  # Thymeleaf에 연결될 viewname 범위 설정
+  messages:
+    basename: messages # config/i18n/messages # 일단 국제화 관련은 사용하지 않음
+    # https://blog.hkwon.me/spring-boot-spring-i18n-configuration/ - yml 파일로 i18n 사용 시 주의사항
+    # https://junshock5.tistory.com/131 - 메시지 소스를 yml 파일로 사용하는 방법
+    encoding: UTF-8
+mybatis:
+  type-aliases-package: com.example.vo
+  mapper-locations: classpath:mappers/*.xml

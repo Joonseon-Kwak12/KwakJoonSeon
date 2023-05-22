@@ -1,0 +1,81 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<div id="member-login-form-div" class="hidden">
+	<div class="text-right close-btn">x</div>
+	<div class="text-center text-3xl my-6">crossjoin에 로그인해볼까요?</div>
+	
+	<form id="member-login-form">
+		<div class="w-[380px] mx-auto flex flex-col items-center gap-4 text-xl">
+			<label class="relative w-full" > <!-- for="input-email" -->
+				<input class="h-14 rounded border peer w-full px-3" name="email" placeholder="이메일" />
+				<span class="hidden absolute left-3 top-3 peer-focus:text-sm peer-focus:top-1 peer-focus:inline">이메일</span>
+			</label>
+			<label class="relative w-full" > <!-- for="input-email" -->
+				<input class="h-14 rounded border peer w-full px-3" name="loginPw" id="input-login-loginPw" placeholder="비밀번호" />
+				<span class="hidden absolute left-3 top-3 peer-focus:text-sm peer-focus:top-1 peer-focus:inline">비밀번호</span>
+			</label>
+		</div>
+		<div class="flex justify-center mt-6 text-[#3B5998] gap-8">
+			<button class="bg-gray-300 rounded py-1 px-3" type="submit">로그인</button>
+		</div>
+	</form>
+</div>
+
+<script>
+	const memberLoginForm = document.getElementById('member-login-form'); // https://sisiblog.tistory.com/261 //https://inpa.tistory.com/entry/JS-%F0%9F%93%9A-FormData-%EC%A0%95%EB%A6%AC-fetch-api
+	
+	memberLoginForm.addEventListener('submit', (e)=> {
+		e.preventDefault();
+		
+		joinErrorHandle();
+		
+		const payload = new FormData(memberLoginForm);
+		
+		fetch('/member/login', {
+	        method: 'POST',
+	        credentials: 'same-origin',
+/* 	        headers: {
+	          'Content-Type': 'application/x-www-form-urlencoded'
+	        }, */
+	        // multipart/form-data로 들어가야하기 때문에 'application/x-www-form-urlencoded'가 들어가면 안 된다. https://velog.io/@ksmfou98/HTTP-%ED%8F%BC%EA%B3%BC-%ED%8C%8C%EC%9D%BC-%EC%A0%84%EC%86%A1-x-www-form-urlencoded-Multipartform-data
+	        body: payload,
+		}).then(res => res.json())
+ 		.then(data => { if (data['data1'] == '') {
+			alert(data['msg']);
+		} else {
+			alert(data['data1'] + '님 환영합니다.');
+			document.body.removeChild(document.body.querySelector('.modal-bg'));
+			document.body.removeChild(document.body.querySelector('.modal-container'));
+			getLoginedMemberNicknameAndRender();
+		}
+		});
+		
+	});
+		
+	function joinErrorHandle() {
+		if (isFormSubmitted) {
+			alert('처리중입니다');
+			return;
+		}
+
+		memberLoginForm.email.value = memberLoginForm.email.value.trim();
+		if (memberLoginForm.email.value == 0) {
+			alert('이메일을 입력해주세요');
+			return;
+		}
+		memberLoginForm.loginPw.value = memberLoginForm.loginPw.value.trim();
+		if (memberLoginForm.loginPw.value == 0) {
+			alert('비밀번호를 입력해주세요');
+			return;
+		}
+		if (validLoginId = "") {
+			alert('유효하지 않은 아이디입니다.');
+			return;
+		}
+		if (validEmail = "") {
+			alert('유효하지 않은 메일 주소입니다.');
+			retrun;
+		}
+
+		isFormSubmitted = true;
+	}
+</script>

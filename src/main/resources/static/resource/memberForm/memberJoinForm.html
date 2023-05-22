@@ -1,0 +1,194 @@
+<!-- <div id="close-btn-containter" class="text-2xl relative"> <div id="close-btn" class="w-[7%] right-0 absolute">x</div> </div> -->
+
+<div class="text-center text-3xl my-8">crossjoin의 회원이 되어보세요!</div>
+
+<form id="member-join-form">
+	<div class="w-[380px] mx-auto flex flex-col items-center gap-4 text-xl">
+		<label class="relative w-full">
+			<input class="h-14 rounded border peer w-full px-3" name="email" id="input-join-email" placeholder="이메일" />
+			<span class="hidden absolute left-3 top-3 peer-focus:text-sm peer-focus:top-1 peer-focus:inline">이메일</span>
+		</label>
+		<div id="emailDupMsg"></div>
+		<label class="relative w-full">
+			<input class="h-14 rounded border peer w-full px-3" name="loginPw" id="input-join-loginPw" placeholder="비밀번호" />
+			<span class="hidden absolute left-3 top-3 peer-focus:text-sm peer-focus:top-1 peer-focus:inline">비밀번호</span>
+		</label>
+		<div id="loginPwValidationMsg"></div>
+		<label class="relative w-full">
+			<input class="h-14 rounded border peer w-full px-3" name="loginPwConfirm" placeholder="비밀번호 확인" />
+			<span class="hidden absolute left-3 top-3 peer-focus:text-sm peer-focus:top-1 peer-focus:inline">비밀번호 확인</span>
+		</label>
+		<label class="relative w-full">
+			<input class="h-14 rounded border peer w-full px-3" name="nickname" placeholder="닉네임" />
+			<span class="hidden absolute left-3 top-3 peer-focus:text-sm peer-focus:top-1 peer-focus:inline">닉네임</span>
+		</label>
+	</div>
+	<div class="flex justify-center mt-6 text-[#3B5998] gap-8">
+		<button class="bg-gray-300 rounded py-1 px-3" type="submit">회원가입</button>
+	</div>
+</form>
+
+<script>
+	let isFormSubmitted = false;
+	let validLoginId = "";
+	let validEmail = "";
+
+	const memberJoinForm = document.getElementById('member-join-form'); // https://sisiblog.tistory.com/261 //https://inpa.tistory.com/entry/JS-%F0%9F%93%9A-FormData-%EC%A0%95%EB%A6%AC-fetch-api
+	
+	memberJoinForm.addEventListener('submit', (e)=> {
+		e.preventDefault();
+		
+		joinErrorHandle();
+		
+		const payload = new FormData(memberJoinForm);
+		
+		console.log(payload);
+		console.log(memberJoinForm);
+		/* payload.append('email', form.email.value);
+		payload.append('loginPw', form.loginPw.value);
+		payload.append('nickname', form.nickname.value); */
+		
+		fetch('/member/join', {
+	        method: 'POST',
+	        credentials: 'same-origin',
+/* 	        headers: {
+	          'Content-Type': 'application/x-www-form-urlencoded'
+	        }, */
+	        // multipart/form-data로 들어가야하기 때문에 'application/x-www-form-urlencoded'가 들어가면 안 된다. https://velog.io/@ksmfou98/HTTP-%ED%8F%BC%EA%B3%BC-%ED%8C%8C%EC%9D%BC-%EC%A0%84%EC%86%A1-x-www-form-urlencoded-Multipartform-data
+	        body: payload,
+		}).then(res => res.json()).then(data => console.log(data));
+		
+	});
+		
+	function joinErrorHandle() {
+		if (isFormSubmitted) {
+			alert('처리중입니다');
+			return;
+		}
+
+		memberJoinForm.email.value = memberJoinForm.email.value.trim();
+		if (memberJoinForm.email.value == 0) {
+			alert('이메일을 입력해주세요');
+			return;
+		}
+		memberJoinForm.loginPw.value = memberJoinForm.loginPw.value.trim();
+		if (memberJoinForm.loginPw.value == 0) {
+			alert('비밀번호를 입력해주세요');
+			return;
+		}
+		memberJoinForm.loginPwConfirm.value = memberJoinForm.loginPwConfirm.value.trim();
+		if (memberJoinForm.loginPwConfirm.value == 0) {
+			alert('비밀번호 확인을 입력해주세요');
+			return;
+		}
+		if (memberJoinForm.loginPwConfirm.value != memberJoinForm.loginPw.value) {
+			alert('비밀번호와 비밀번호 확인이 일치하지 않습니다');
+			memberJoinForm.loginPw.focus();
+			return;
+		}
+		memberJoinForm.nickname.value = memberJoinForm.nickname.value.trim();
+		if (memberJoinForm.nickname.value == 0) {
+			alert('닉네임을 입력해주세요');
+			return;
+		}
+		if (validLoginId = "") {
+			alert('유효하지 않은 아이디입니다.');
+			return;
+		}
+		if (validEmail = "") {
+			alert('유효하지 않은 메일 주소입니다.');
+			retrun;
+		}
+
+		isFormSubmitted = true;
+	}
+
+	async function checkDupEmail(email) {
+		validEmail = "";
+		
+		const emailDupMsg = document.querySelector('#emailDupMsg');
+		emailDupMsg.replaceChildren();
+		
+		if (email === "" || email === undefined) {
+			let msg = document.createElement("div");
+			msg.innerText = "메일 주소를 입력해주세요.";
+			emailDupMsg.append(msg);
+			msg.classList.add("text-red-300");
+			validEmail = "";
+			return;
+		}
+
+		if (email.indexOf('@') === -1) {
+			let msg = document.createElement("div");
+			msg.innerText = "이메일 형식이 바르지 않습니다.";
+			emailDupMsg.append(msg);
+			msg.classList.add("text-red-300");
+			validEmail = "";
+			return;
+		}
+
+		let response = await fetch('/member/checkDupEmail?email=' + email);
+
+		if (response.ok) {
+			let result = await response.text();
+
+			if (result === "Y") {
+				let msg = document.createElement("div");
+				msg.innerText = "사용 가능한 메일 주소입니다.";
+				emailDupMsg.append(msg);
+				msg.classList.add("text-lime-400");
+				validEmail = email
+			} else if (result === "N") {
+				let msg = document.createElement("div");
+				msg.innerText = "이미 사용 중인 메일 주소입니다.";
+				emailDupMsg.append(msg);
+				msg.classList.add("text-red-300");
+				validEmail = ""
+			}
+			// respones.ok인 경우 끝
+		} else {
+			alert("HTTP-Error: " + response.status);
+		}
+	}
+
+	function checkValidationLoginPw(loginPw) {
+
+		const loginPwValidationMsg = document.querySelector('#loginPwValidationMsg');
+		loginPwValidationMsg.replaceChildren();
+
+		if (loginPw === "" || loginPw === undefined) {
+			let msg = document.createElement("div");
+			msg.innerText = "비밀번호를 입력해주세요.";
+			loginPwValidationMsg.append(msg);
+			msg.classList.add("text-red-300");
+			return;
+		}
+
+		if (loginPw.trim().length < 5) {
+			let msg = document.createElement("div");
+			msg.innerText = "비밀번호는 5글자 이상이어야 합니다.";
+			loginPwValidationMsg.append(msg);
+			msg.classList.add("text-red-300");
+			return;
+		}
+
+		if (loginPw.indexOf(' ') >= 0) {
+			let msg = document.createElement("div");
+			msg.innerText = "비밀번호에는 공백이 포함될 수 없습니다.";
+			loginPwValidationMsg.append(msg);
+			msg.classList.add("text-red-300");
+			return;
+		}
+	}
+
+	const inputJoinEmail = document.querySelector('#input-join-email');
+	inputJoinEmail.onblur = function() {
+		checkDupEmail(inputJoinEmail.value);
+	};
+	// inputEmail.onblur = checkDupEmail(inputEmail.value); // 이렇게 적으면 처음 시작할 때 딱 한 번만 실행됨
+	
+	const inputJoinLoginPw = document.querySelector('#input-join-loginPw');
+	inputJoinLoginPw.onkeyup = function() {
+		checkValidationLoginPw(inputJoinLoginPw.value);
+	};
+</script>
